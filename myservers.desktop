@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=myservers
+Comment=Grafische Oberfläche zur Auflistung von MySQL/MariaDB Instanzen
+Exec=/home/mic/Sourcecode/myservers/myservers.sh --file /home/mic/Sourcecode/myservers/myservers.conf --gui
+Icon=/home/mic/Sourcecode/myservers/myservers.png
+Path=
+Terminal=false
+StartupNotify=false

@@ -1,0 +1,3 @@
+root:mypassword:myfirsthost:mysql
+root:mypassword:mysecondhost:mysql
+#root:mypassword:mydisabledhost:mysql
