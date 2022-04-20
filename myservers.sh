@@ -87,7 +87,7 @@ IFS=$'\t\n'
 zen_dat_opts=( --width="800" --height="500"
     #--title="$(basename $0) - Laufende MySQL/MariaDB Instanzen - Filter auf ${filters[$filter]}"
     --title="$(basename $0) - Laufende MySQL/MariaDB Instanzen"
-    --text="" --center --window-icon="officedatabase_104402.png"
+    --text="" --center --window-icon="myservers.png"
     --list --column="Name" --column="Wert"  
     --print-column="1" --separator="\t" --grid-lines=hor
     #--button=" Mount!add":1 --button=" Unmount!remove":2 --button=" Filter!gtk-preferences":4 
