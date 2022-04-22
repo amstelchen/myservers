@@ -1,25 +1,34 @@
 #!/bin/bash
 
-version="0.1.1" # wird mit --version auf der console ausgegeben
+version="0.1.2" # wird mit --version auf der console ausgegeben
 GUI=yad
 filter=0
 
+. gettext.sh
+
+TEXTDOMAIN=myservers
+export TEXTDOMAIN
+TEXTDOMAINDIR=/usr/share/locale
+export TEXTDOMAINDIR
+
+progtitle=$(eval_gettext "running MySQL/MariaDB instances")
+
 #Versionsinfo auf der Console ausgeben, dann beenden
-if [[ $1 = "--version" ]]; then
-    echo "$(basename $0) version $version"
-    echo "Copyright 2019 Michael John
+if [[ $1 = "--version" || $1 = "-v" ]]; then
+    eval_gettext "$(basename $0) version $version"; echo
+    echo "Copyright 2019, 2022 Michael John
 License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law."
     exit
 fi
 
-if [[ $1 = "--help" ]]; then
+if [[ $1 = "--help" || $1 = "-h" ]]; then # || $1 = "" 
     echo "Aufruf: $(basename $0) [OPTIONEN]
       --file DATEI           diese Benutzerkonfigurationsdatei verwenden
       --gui                  zeigt die Übersicht als yad-Dialog an
-      --help                 zeigt eine Kurzfassung des Aufrufs
-      --version              zeige Programmversion an"
+      -h, --help             zeigt eine Kurzfassung des Aufrufs
+      -v, --version          zeige Programmversion an"
     exit
 fi
 
@@ -32,17 +41,17 @@ fi
 
 #Überprüfen ob yad installiert ist
 #Später durch detect_gui() ersetzen
-if ! [ -x "$(command -v yad)" ]; then
-    echo 'Error: yad is not installed.' >&2
+if ! [ -x "$(command -v $GUI)" ]; then
+    eval_gettext 'Error: $GUI is not installed.'; echo
     exit 1
 fi
 
-echo "$(basename $0) version $version"
+eval_gettext "$(basename $0) version $version"
 echo
 
 if [[ $1 = "--file" ]]; then
 	if [[ $2 = "" ]]; then
-		echo "no file given, exiting."
+		eval_gettext "No file given, exiting."; echo
 		exit
 	else
 		file=$2
@@ -55,11 +64,17 @@ fi
 while IFS=: read -r f1 f2 f3 f4 f5 f6 f7
 do
         # display fields using f1, f2,..,f7
-        printf 'Username: %s, Password: ***, Host: %s, DB: %s\n' "$f1" "$f3" "$f4"
+		printf -v USERPASS 'Username: %s, Password: ***, Host: %s, DB: %s\n' "$f1" "$f3" "$f4"
+		if [[ $1 != "--gui" ]]; then
+			#OUTPUT+=$USERPASS
+		#else
+			echo $USERPASS
+		fi
 	echo
 	if grep -q "#" <<<"$f1"; then
-		printf "...skipped."
+		eval_gettext "...skipped."
 		echo
+		break
 	else
 		OUTPUT+="Host: $f3 DB: $f4"
 		OUTPUT+=$'\t \n'
@@ -73,12 +88,12 @@ where VARIABLE_NAME='Uptime';")"
 		OUTPUT+="Uptime: $UPTIME"
 		OUTPUT+=$'\n \n'
 		RESULT="$(mysql -u $f1 -p$f2 -h $f3 -D $f4 -B -N -e "select variable_name, IF(variable_value IS NULL or variable_value = '', '(empty)', variable_value) variable_value from information_schema.global_variables where variable_name like 'version%' order by variable_name;")"
-		echo "$RESULT"
-		OUTPUT+="$RESULT"
-		#OUTPUT+=$'\n'
-	fi
-		OUTPUT+=$'\n'
-	echo "================================================================"
+		if [[ $1 != "--gui" ]]; then echo "$RESULT"; fi
+			OUTPUT+="$RESULT"
+			#OUTPUT+=$'\n'
+		fi
+		OUTPUT+=$'\n \n \n'
+	#echo "================================================================"
 	echo
 done <"$file"
 
@@ -86,7 +101,7 @@ done <"$file"
 IFS=$'\t\n'
 zen_dat_opts=( --width="800" --height="500"
     #--title="$(basename $0) - Laufende MySQL/MariaDB Instanzen - Filter auf ${filters[$filter]}"
-    --title="$(basename $0) - Laufende MySQL/MariaDB Instanzen"
+    --title="$(basename $0) - $(progtitle)"
     --text="" --center --window-icon="myservers.png"
     --list --column="Name" --column="Wert"  
     --print-column="1" --separator="\t" --grid-lines=hor
